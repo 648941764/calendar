@@ -10,6 +10,7 @@ public class Test : MonoBehaviour
     [SerializeField] private Transform _dateParent;
     [SerializeField] private Transform _dateSlot;
     [SerializeField] private Button _reduceBtn, _increseBtn;
+    [SerializeField] private bool _isComplete;
     private DateTime _currentDate;
     private int _num = 42;
     private int _temporary = 1;
@@ -17,6 +18,7 @@ public class Test : MonoBehaviour
     private DateTime _firstDayOfMonth;
     private int _dayInMonth;
     private int _initDay;
+    private int _daysInLastMonth;
     private DateTime _initDate;
 
     private void Awake()
@@ -43,22 +45,31 @@ public class Test : MonoBehaviour
 
     private void Update()
     {
-        if (_currentDate == _initDate)
+        if (_currentDate.Year == _initDate.Year &&  _currentDate.Month == _initDate.Month)
         {
-            _slotList[_initDay - 1].GetComponent<Image>().color = Color.yellow;
+            _slotList[_initDay - 1 + (int)_firstDayOfMonth.DayOfWeek].GetComponent<Image>().color = Color.yellow;
         }
         else
         {
-            _slotList[_initDay - 1].GetComponent<Image>().color = Color.clear;
+            //_slotList[_initDay - 1].GetComponent<Image>().color = Color.clear;
+            foreach (Transform item in _slotList)
+            {
+                item.GetComponent<Image>().color = Color.clear;
+            }
         }
     }
-
+    /// <summary>
+    /// 构造日历
+    /// </summary>
     public void SetCalendar()
     {
         _temporary = 1;
         //找到当月的一号是周几
         _firstDayOfMonth = new DateTime(_currentDate.Year, _currentDate.Month, 1);
         int firstDay = (int)_firstDayOfMonth.DayOfWeek;
+        DateTime temporaryDate = _currentDate.AddDays(-1);
+        _daysInLastMonth = DateTime.DaysInMonth(temporaryDate.Year, temporaryDate.Month);
+        Debug.Log(firstDay);
         //获取这个月一共有多少天
         _dayInMonth = DateTime.DaysInMonth(_currentDate.Year, _currentDate.Month);
         //制作日历
@@ -71,6 +82,26 @@ public class Test : MonoBehaviour
             //}
             _temporary++;
         }
+
+        //先找到空的格子，然后把上个月后几天放在这里面,其次把颜色变淡
+        if (_isComplete == true && firstDay >= 1)
+        {
+            _temporary = 1;
+            Debug.Log("执行");
+            for (int j = firstDay - 1; j >= 0; --j)//找到上个月月末
+            {
+                _slotList[j].GetChild(0).GetComponent<Text>().text = _daysInLastMonth.ToString();
+                _slotList[j].GetChild(0).GetComponent<Text>().color = Color.gray;
+                _daysInLastMonth--;
+            }
+
+            for (int i = _dayInMonth + firstDay; i < _slotList.Count; i++)
+            {
+                _slotList[i].GetChild(0).GetComponent<Text>().text = _temporary.ToString();
+                _slotList[i].GetChild(0).GetComponent<Text>().color = Color.gray;
+                _temporary++;
+            }
+        }
     }
 
     public void ClearCalendar()
@@ -78,6 +109,7 @@ public class Test : MonoBehaviour
         foreach (Transform slot in _slotList)
         {
             slot.GetChild(0).GetComponent<Text>().text = " ";
+            slot.GetChild(0).GetComponent<Text>().color = Color.white;
         }
     }
 
@@ -104,13 +136,11 @@ public class Test : MonoBehaviour
         {
             _currentDate = new DateTime(_currentDate.Year + 1, 1, _currentDate.Day);
             SetCalendar();
-            Debug.Log("执行加年份");
         }
         else if (_currentDate.Month < 12)
         {
             _currentDate = new DateTime(_currentDate.Year, _currentDate.Month + 1, 1);
             SetCalendar();
-            Debug.Log("执行加月份");
         }
         _dateText.text = string.Format("{0}/{1}", _currentDate.Year, _currentDate.Month);
     }

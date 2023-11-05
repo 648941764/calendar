@@ -1534,6 +1534,7 @@ MonoBehaviour:
   _dateSlot: {fileID: 3365717449085248331, guid: 4e0dd23b496ff3f46a8284b0c30090f8, type: 3}
   _reduceBtn: {fileID: 2111026534}
   _increseBtn: {fileID: 1206635148}
+  _isComplete: 1
 --- !u!1 &1889819680
 GameObject:
   m_ObjectHideFlags: 0
